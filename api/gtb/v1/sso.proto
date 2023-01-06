@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+
+package sso;
+
+option go_package = "github.com/min65535/gtb";
+option java_multiple_files = true;
+option java_package = "api.gtb.v1";
+option java_outer_classname = "SsoProtoV1";
+
+service Sso {
+    // 登录(对外)
+    rpc SignIn (SignInRequest) returns (SignInResponse){
+        option (google.api.http) = {
+            post: "/api/v1/auth/gtb/sign_in"
+            body: "*"
+        };
+    };
+}
+
+message SignInRequest {
+    string account = 1;
+    string password = 2; // 密码登录
+    string token = 3;    // 第三方登录填access token
+    LoginMethodType login_method = 4;
+}
+
+message TokenInfo {
+    string token = 1;
+    uint32 valid_secs = 2;
+}
+
+enum LoginMethodType {
+    LMT_UNKNOWN = 0;
+    LMT_EMAIL = 1;
+    LMT_PHONE = 2;
+    LMT_FACEBOOK = 3;
+    LMT_TWITTER = 4;
+    LMT_GOOGLE = 5;
+    LMT_SNAPCHAT = 6;
+    LMT_APPLE = 7;
+}
+
+message SignInResponse {
+    uint64 uid = 3;
+    TokenInfo access_token = 4;    // 设置到channel的ChannelCredentials的key: "x-auth-token"
+    TokenInfo refresh_token = 5;   // 每次请求access_token自动延长有效期, 过期需要重新登录
+    LoginMethodType login_method = 10; // 账号类型
+}
+
